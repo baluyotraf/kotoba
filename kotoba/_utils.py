@@ -13,11 +13,25 @@ def _as_iterable(element):
     yield element
 
 
-def map_elements(data, func=lambda x: x):
+def map_iterable(data, func=lambda x: x):
     if _is_iterable(data):
-        return [map_elements(d, func) for d in data]
+        return func((map_iterable(d, func) for d in data))
+    else:
+        return data
+
+
+def _map_elements(data, func=lambda x: x):
+    if _is_iterable(data):
+        return (_map_elements(d, func) for d in data)
     else:
         return func(data)
+
+
+def map_elements(data, func=lambda x: x, as_list=True):
+    mapped = _map_elements(data, func)
+    if as_list:
+        mapped = map_iterable(mapped, list)
+    return mapped
 
 
 def flatten(data):
