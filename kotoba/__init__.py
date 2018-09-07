@@ -17,7 +17,7 @@ class Pipeline(Preprocessor):
 
     def transform(self, x):
         for p in self._preprocessors:
-            x = p(x)
+            x = p.transform(x)
         return x
 
 
