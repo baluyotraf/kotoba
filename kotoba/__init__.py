@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from ._utils import apply_to_nested
+from ._utils import map_elements
 from . import embedding
 
 
@@ -27,7 +27,7 @@ class FunctionPreprocessor(Preprocessor):
         self._func = func
 
     def transform(self, x):
-        return apply_to_nested(x, self._func)
+        return map_elements(x, self._func)
 
 
 class LowerCase(FunctionPreprocessor):

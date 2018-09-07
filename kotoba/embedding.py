@@ -2,26 +2,8 @@ import numpy as np
 import os
 import enum
 import json
-from itertools import filterfalse, chain
-
-
-def _apply_to_nested(data, func=lambda x: x):
-    try:
-        iter(data)
-        if isinstance(data, str):
-            return func(data)
-        else:
-            return [_apply_to_nested(i, func) for i in data]
-    except TypeError:
-        return func(data)
-
-
-def _uniquify(iterable):
-    seen = set()
-    seen_add = seen.add
-    for element in filterfalse(seen.__contains__, iterable):
-        seen_add(element)
-        yield element
+from itertools import chain
+from ._utils import map_elements, uniquify
 
 
 class SpecialTokens(enum.Enum):
@@ -31,7 +13,7 @@ class SpecialTokens(enum.Enum):
 
 class TokenEmbedding:
     def __init__(self, token_list):
-        token_list = _uniquify(token_list)
+        token_list = uniquify(token_list)
         index_to_token = list(SpecialTokens)
         index_to_token.extend(token_list)
         count = len(index_to_token)
@@ -46,7 +28,7 @@ class TokenEmbedding:
         def _token_to_index(token):
             return self._token_to_index.get(token, default)
 
-        return _apply_to_nested(tokens, _token_to_index)
+        return map_elements(tokens, _token_to_index)
 
     def index_to_token(self, indices, strict=False):
 
@@ -65,7 +47,7 @@ class TokenEmbedding:
                     else:
                         return SpecialTokens.UNKNOWN
 
-        return _apply_to_nested(indices, _index_to_token)
+        return map_elements(indices, _index_to_token)
 
     def coverage(self, token_list):
         token_list = set(token_list)

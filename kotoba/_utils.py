@@ -1,15 +1,30 @@
-from itertools import filterfalse
+from itertools import filterfalse, chain
 
 
-def apply_to_nested(data, func=lambda x: x):
+def _is_iterable(iterable):
     try:
-        iter(data)
-        if isinstance(data, str):
-            return func(data)
-        else:
-            return [apply_to_nested(i, func) for i in data]
+        iter(iterable)
+        return not isinstance(iterable, str)
     except TypeError:
+        return False
+
+
+def _as_iterable(element):
+    yield element
+
+
+def map_elements(data, func=lambda x: x):
+    if _is_iterable(data):
+        return [map_elements(d, func) for d in data]
+    else:
         return func(data)
+
+
+def flatten(data):
+    if _is_iterable(data):
+        return chain.from_iterable((flatten(d) for d in data))
+    else:
+        return _as_iterable(data)
 
 
 def uniquify(iterable):
