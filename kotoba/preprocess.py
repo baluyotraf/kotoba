@@ -22,14 +22,15 @@ class Pipeline(Preprocessor):
 
 class FunctionPreprocessor(Preprocessor):
 
-    def __init__(self, func):
+    def __init__(self, func, as_iterable=False):
         self._func = func
+        self._as_iterable = as_iterable
 
     def transform(self, x):
-        return map_elements(x, self._func)
+        return map_elements(x, self._func, self._as_iterable)
 
 
 class LowerCase(FunctionPreprocessor):
 
-    def __init__(self):
-        super().__init__(lambda x: x.lower())
+    def __init__(self, as_iterable=False):
+        super().__init__(lambda x: x.lower(), as_iterable)

@@ -27,9 +27,9 @@ def _map_elements(data, func=lambda x: x):
         return func(data)
 
 
-def map_elements(data, func=lambda x: x, as_list=True):
+def map_elements(data, func=lambda x: x, as_iterable=False):
     mapped = _map_elements(data, func)
-    if as_list:
+    if not as_iterable:
         mapped = map_iterable(mapped, list)
     return mapped
 
