@@ -7,7 +7,7 @@ def apply_to_nested(data, func=lambda x: x):
         if isinstance(data, str):
             return func(data)
         else:
-            return [_apply_to_nested(i, func) for i in data]
+            return [apply_to_nested(i, func) for i in data]
     except TypeError:
         return func(data)
 
