@@ -1,11 +1,8 @@
 from abc import ABCMeta, abstractmethod
 from ._utils import uniquify, flatten, create_directory
-from enum import Enum
 
 
-class SpecialTokens(Enum):
-    PAD = '<PAD>'
-    UNKNOWN = '<UNK>'
+_UNKNOWN = '__UNKNOWN__'
 
 
 class TokenEmbedding(metaclass=ABCMeta):
@@ -31,28 +28,18 @@ class TokenEmbedding(metaclass=ABCMeta):
         pass
 
 
-class BasicEmbedding(TokenEmbedding):
-    def __init__(self, token_list, add_pad=False):
-        index_to_token = self._create_index_token_list(token_list, add_pad)
+class Embedding(TokenEmbedding):
+    def __init__(self, token_list, special_tokens=None):
+        index_to_token = self._create_index_token_list(token_list, special_tokens)
         self._index_to_token = tuple(index_to_token)
         self._token_to_index = self._create_token_index_dict(index_to_token)
         self._token_set = frozenset(index_to_token)
 
     # noinspection PyMethodMayBeStatic
-    def _check_special_chars(self, x):
-        try:
-            SpecialTokens(x)
-        except ValueError:
-            return True
-        raise ValueError('{} is a reserved keyword'.format(x))
-
-    # noinspection PyMethodMayBeStatic
-    def _create_index_token_list(self, token_list, add_pad):
+    def _create_index_token_list(self, token_list, special_tokens):
         token_list = uniquify(flatten(token_list))
-        token_list = filter(self._check_special_chars, token_list)
-        index_to_token = []
-        if add_pad:
-            index_to_token.append(SpecialTokens.PAD.value)
+        index_to_token = (list(uniquify(flatten(special_tokens)))
+                          if special_tokens is not None else [])
         index_to_token.extend(token_list)
         return index_to_token
 
@@ -67,12 +54,12 @@ class BasicEmbedding(TokenEmbedding):
 
     def id_to_token(self, id_):
         if id_ < 0:
-            return SpecialTokens.UNKNOWN.value
+            return _UNKNOWN
         else:
             try:
                 return self._index_to_token[id_]
             except IndexError:
-                return SpecialTokens.UNKNOWN.value
+                return _UNKNOWN
 
     # noinspection PyMethodMayBeStatic
     def _get_coverage(self, base_set, target_list):
@@ -96,10 +83,13 @@ class BasicEmbedding(TokenEmbedding):
     def token_size(self):
         return len(self._index_to_token)
 
-    def save(self, path, encoding='utf-8'):
-        return self.export_token_list(path, encoding)
+    @classmethod
+    def load_from_export_file(cls, path, encoding='utf-8', special_tokens=None):
+        with open(path, 'r', encoding=encoding) as file:
+            return cls((l.strip() for l in file), special_tokens)
 
     @classmethod
-    def load(cls, path, encoding='utf-8', add_pad=False):
+    def load_from_glove_file(cls, path, encoding='utf-8', special_tokens=None):
         with open(path, 'r', encoding=encoding) as file:
-            return cls([l.strip() for l in file], add_pad)
+            parsed_file = (l.strip().split(' ')[0] for l in file)
+            return cls(parsed_file, special_tokens)
