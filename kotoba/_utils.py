@@ -1,4 +1,5 @@
 from itertools import filterfalse, chain
+import os
 
 
 def _is_iterable(iterable):
@@ -47,3 +48,9 @@ def uniquify(iterable):
     for element in filterfalse(seen.__contains__, iterable):
         seen_add(element)
         yield element
+
+
+def create_directory(path):
+    parent_dir = os.path.dirname(path)
+    if parent_dir:
+        os.makedirs(parent_dir, exist_ok=True)
