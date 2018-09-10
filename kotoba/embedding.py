@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from ._utils import uniquify, flatten, create_directory
+from .preprocess import FunctionPreprocessor
 
 
 _UNKNOWN = '__UNKNOWN__'
@@ -93,3 +94,15 @@ class Embedding(TokenEmbedding):
         with open(path, 'r', encoding=encoding) as file:
             parsed_file = (l.strip().split(' ')[0] for l in file)
             return cls(parsed_file, special_tokens)
+
+
+class EmbedTokenToID(FunctionPreprocessor):
+
+    def __init__(self, token_embedding):
+        super().__init__(token_embedding.token_to_id)
+
+
+class EmbedIDToToken(FunctionPreprocessor):
+
+    def __init__(self, token_embedding):
+        super().__init__(token_embedding.id_to_token)
