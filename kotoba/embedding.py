@@ -86,12 +86,12 @@ class Embedding(TokenEmbedding):
         return len(self._index_to_token)
 
     @classmethod
-    def load_from_export_file(cls, path, special_tokens=None, unk_idx=None, encoding='utf-8'):
+    def from_export_file(cls, path, special_tokens=None, unk_idx=None, encoding='utf-8'):
         with open(path, 'r', encoding=encoding) as file:
             return cls((l.strip() for l in file), special_tokens, unk_idx)
 
     @classmethod
-    def load_from_glove_file(cls, path, special_tokens=None, unk_idx=None, encoding='utf-8'):
+    def from_glove_file(cls, path, special_tokens=None, unk_idx=None, encoding='utf-8'):
         with open(path, 'r', encoding=encoding) as file:
             parsed_file = (l.strip().split(' ')[0] for l in file)
             return cls(parsed_file, special_tokens, unk_idx)
