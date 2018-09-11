@@ -3,9 +3,6 @@ from ._utils import uniquify, flatten, create_directory
 from .preprocess import FunctionPreprocessor
 
 
-_UNKNOWN = '__UNKNOWN__'
-
-
 class TokenEmbedding(metaclass=ABCMeta):
 
     @abstractmethod
@@ -30,17 +27,22 @@ class TokenEmbedding(metaclass=ABCMeta):
 
 
 class Embedding(TokenEmbedding):
-    def __init__(self, token_list, special_tokens=None):
+    def __init__(self, token_list, special_tokens=None, unk_idx=None):
+        special_tokens = special_tokens or []
+        self._unk = (None if unk_idx is None
+                     else special_tokens[unk_idx])
         index_to_token = self._create_index_token_list(token_list, special_tokens)
         self._index_to_token = tuple(index_to_token)
         self._token_to_index = self._create_token_index_dict(index_to_token)
         self._token_set = frozenset(index_to_token)
+        self._unk_id = (len(self._index_to_token) + 1
+                        if self._unk is None
+                        else unk_idx)
 
     # noinspection PyMethodMayBeStatic
     def _create_index_token_list(self, token_list, special_tokens):
         token_list = uniquify(flatten(token_list))
-        index_to_token = (list(uniquify(flatten(special_tokens)))
-                          if special_tokens is not None else [])
+        index_to_token = special_tokens.copy()
         index_to_token.extend(token_list)
         return index_to_token
 
@@ -50,17 +52,16 @@ class Embedding(TokenEmbedding):
         return dict(zip(index_token_list, range(count)))
 
     def token_to_id(self, token):
-        default = len(self._token_to_index) + 1
-        return self._token_to_index.get(token, default)
+        return self._token_to_index.get(token, self._unk_id)
 
     def id_to_token(self, id_):
         if id_ < 0:
-            return _UNKNOWN
+            return self._unk
         else:
             try:
                 return self._index_to_token[id_]
             except IndexError:
-                return _UNKNOWN
+                return self._unk
 
     # noinspection PyMethodMayBeStatic
     def _get_coverage(self, base_set, target_list):
@@ -85,15 +86,15 @@ class Embedding(TokenEmbedding):
         return len(self._index_to_token)
 
     @classmethod
-    def load_from_export_file(cls, path, encoding='utf-8', special_tokens=None):
+    def load_from_export_file(cls, path, special_tokens=None, unk_idx=None, encoding='utf-8'):
         with open(path, 'r', encoding=encoding) as file:
-            return cls((l.strip() for l in file), special_tokens)
+            return cls((l.strip() for l in file), special_tokens, unk_idx)
 
     @classmethod
-    def load_from_glove_file(cls, path, encoding='utf-8', special_tokens=None):
+    def load_from_glove_file(cls, path, special_tokens=None, unk_idx=None, encoding='utf-8'):
         with open(path, 'r', encoding=encoding) as file:
             parsed_file = (l.strip().split(' ')[0] for l in file)
-            return cls(parsed_file, special_tokens)
+            return cls(parsed_file, special_tokens, unk_idx)
 
 
 class EmbedTokenToID(FunctionPreprocessor):
