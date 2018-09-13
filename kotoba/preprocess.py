@@ -38,6 +38,18 @@ class HorizontalPipeline(Preprocessor):
         return piped
 
 
+class Raw(Preprocessor):
+
+    def __init__(self, func):
+        self._func = func
+
+    def transform(self, x, as_iterable=False):
+        try:
+            return self._func(x, as_iterable)
+        except TypeError:
+            return self._func(x)
+
+
 class MapItems(Preprocessor):
 
     def __init__(self, func):
