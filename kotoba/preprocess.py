@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from .itertools import map_elements, map_last_dim, batch
+from .itertools import map_elements, map_last_dim, batch, map_iterable
 
 
 class Preprocessor(metaclass=ABCMeta):
@@ -22,7 +22,23 @@ class Pipeline(Preprocessor):
         return x
 
 
-class FunctionPreprocessor(Preprocessor):
+class HorizontalPipeline(Preprocessor):
+
+    def __init__(self, preprocessors):
+        self._preprocessors = preprocessors
+
+    def _transform(self, x, as_iterable):
+        for (d, p) in zip(x, self._preprocessors):
+            yield p.transform(d, as_iterable)
+
+    def transform(self, x, as_iterable=False):
+        piped = self._transform(x, as_iterable)
+        if not as_iterable:
+            piped = list(piped)
+        return piped
+
+
+class MapItems(Preprocessor):
 
     def __init__(self, func):
         self._func = func
@@ -31,19 +47,19 @@ class FunctionPreprocessor(Preprocessor):
         return map_elements(x, self._func, as_iterable)
 
 
-class LastDimensionPreprocessor(Preprocessor):
-
-    def __init__(self, func):
-        self._func = func
-
-    def transform(self, x, as_iterable=False):
-        return map_last_dim(x, self._func, as_iterable)
-
-
-class LowerCase(FunctionPreprocessor):
+class LowerCase(MapItems):
 
     def __init__(self):
         super().__init__(lambda x: x.lower())
+
+
+class Transpose2D(Preprocessor):
+
+    def transform(self, x, as_iterable=False):
+        transposed = zip(*x)
+        if not as_iterable:
+            transposed = map_iterable(transposed, list)
+        return transposed
 
 
 class Batch(Preprocessor):

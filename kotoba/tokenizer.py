@@ -1,7 +1,7 @@
-from .preprocess import FunctionPreprocessor
+from .preprocess import MapItems
 
 
-class NLTKTokenizer(FunctionPreprocessor):
+class NLTKTokenizer(MapItems):
 
     def __init__(self, language='english', preserve_line=False):
         import nltk

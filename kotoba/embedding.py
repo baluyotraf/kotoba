@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from .itertools import uniquify, flatten
-from .preprocess import FunctionPreprocessor
+from .preprocess import MapItems
 
 
 class TokenEmbedding(metaclass=ABCMeta):
@@ -101,13 +101,13 @@ class Embedding(TokenEmbedding):
             return cls(parsed_file, special_tokens, unk_idx)
 
 
-class EmbedTokenToID(FunctionPreprocessor):
+class EmbedTokenToID(MapItems):
 
     def __init__(self, token_embedding):
         super().__init__(token_embedding.token_to_id)
 
 
-class EmbedIDToToken(FunctionPreprocessor):
+class EmbedIDToToken(MapItems):
 
     def __init__(self, token_embedding):
         super().__init__(token_embedding.id_to_token)

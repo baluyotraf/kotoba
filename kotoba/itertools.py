@@ -5,7 +5,7 @@ from collections.abc import Mapping
 _is_iterable_exceptions = [str, bytes, Mapping]
 
 
-def _is_iterable(iterable):
+def is_iterable(iterable):
     try:
         iter(iterable)
         for t in _is_iterable_exceptions:
@@ -16,19 +16,19 @@ def _is_iterable(iterable):
         return False
 
 
-def _as_iterable(element):
+def as_iterable(element):
     yield element
 
 
 def map_iterable(data, func):
-    if _is_iterable(data):
+    if is_iterable(data):
         return func((map_iterable(d, func) for d in data))
     else:
         return data
 
 
 def _map_elements(data, func):
-    if _is_iterable(data):
+    if is_iterable(data):
         return (_map_elements(d, func) for d in data)
     else:
         return func(data)
@@ -42,10 +42,10 @@ def map_elements(data, func, as_iterable=False):
 
 
 def flatten(data):
-    if _is_iterable(data):
+    if is_iterable(data):
         return chain.from_iterable((flatten(d) for d in data))
     else:
-        return _as_iterable(data)
+        return as_iterable(data)
 
 
 def uniquify(iterable):
@@ -74,9 +74,9 @@ def batch(iterable, n, as_iterable=False):
 
 
 def map_last_dim(iterable, func, as_iterable=False):
-    if _is_iterable(iterable):
+    if is_iterable(iterable):
         iter_list = list(iterable)
-        if any((_is_iterable(element) for element in iter_list)):
+        if any((is_iterable(element) for element in iter_list)):
             mapped = (map_last_dim(element, func, as_iterable)
                       for element in iter_list)
             if not as_iterable:
