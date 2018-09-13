@@ -20,21 +20,21 @@ def _as_iterable(element):
     yield element
 
 
-def map_iterable(data, func=lambda x: x):
+def map_iterable(data, func):
     if _is_iterable(data):
         return func((map_iterable(d, func) for d in data))
     else:
         return data
 
 
-def _map_elements(data, func=lambda x: x):
+def _map_elements(data, func):
     if _is_iterable(data):
         return (_map_elements(d, func) for d in data)
     else:
         return func(data)
 
 
-def map_elements(data, func=lambda x: x, as_iterable=False):
+def map_elements(data, func, as_iterable=False):
     mapped = _map_elements(data, func)
     if not as_iterable:
         mapped = map_iterable(mapped, list)
