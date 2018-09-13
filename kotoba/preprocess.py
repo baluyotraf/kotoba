@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from .itertools import map_elements
+from .itertools import map_elements, map_last_dim, batch
 
 
 class Preprocessor(metaclass=ABCMeta):
@@ -31,7 +31,25 @@ class FunctionPreprocessor(Preprocessor):
         return map_elements(x, self._func, as_iterable)
 
 
+class LastDimensionPreprocessor(Preprocessor):
+
+    def __init__(self, func):
+        self._func = func
+
+    def transform(self, x, as_iterable=False):
+        return map_last_dim(x, self._func, as_iterable)
+
+
 class LowerCase(FunctionPreprocessor):
 
     def __init__(self):
         super().__init__(lambda x: x.lower())
+
+
+class Batch(Preprocessor):
+
+    def __init__(self, n):
+        self._n = n
+
+    def transform(self, x, as_iterable=False):
+        return batch(x, self._n, as_iterable)
