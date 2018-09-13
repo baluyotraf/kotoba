@@ -1,10 +1,17 @@
 from itertools import filterfalse, chain, islice
+from collections.abc import Mapping
+
+
+_is_iterable_exceptions = [str, bytes, Mapping]
 
 
 def _is_iterable(iterable):
     try:
         iter(iterable)
-        return not isinstance(iterable, str)
+        for t in _is_iterable_exceptions:
+            if isinstance(iterable, t):
+                return False
+        return True
     except TypeError:
         return False
 
