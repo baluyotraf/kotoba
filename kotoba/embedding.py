@@ -29,15 +29,13 @@ class TokenEmbedding(metaclass=ABCMeta):
 class Embedding(TokenEmbedding):
     def __init__(self, token_list, special_tokens=None, unk_idx=None):
         special_tokens = special_tokens or []
-        self._unk = (None if unk_idx is None
-                     else special_tokens[unk_idx])
         index_to_token = self._create_index_token_list(token_list, special_tokens)
         self._index_to_token = tuple(index_to_token)
         self._token_to_index = self._create_token_index_dict(index_to_token)
         self._token_set = frozenset(index_to_token)
-        self._unk_id = (len(self._index_to_token) + 1
-                        if self._unk is None
-                        else unk_idx)
+        self._unk = (None if unk_idx is None
+                     else index_to_token[unk_idx])
+        self._unk_id = unk_idx or -1
 
     # noinspection PyMethodMayBeStatic
     def _create_parent_dir(self, path):
