@@ -1,5 +1,4 @@
-from itertools import filterfalse, chain
-import os
+from itertools import filterfalse, chain, islice
 
 
 def _is_iterable(iterable):
@@ -50,7 +49,33 @@ def uniquify(iterable):
         yield element
 
 
-def create_directory(path):
-    parent_dir = os.path.dirname(path)
-    if parent_dir:
-        os.makedirs(parent_dir, exist_ok=True)
+def _batch(iterable, n):
+    iterator = iter(iterable)
+    while True:
+        current_batch = list(islice(iterator, n))
+        if current_batch:
+            yield current_batch
+        else:
+            break
+
+
+def batch(iterable, n, as_iterable=False):
+    batched = _batch(iterable, n)
+    if not as_iterable:
+        batched = map_iterable(batched, list)
+    return batched
+
+
+def map_last_dim(iterable, func, as_iterable=False):
+    if _is_iterable(iterable):
+        iter_list = list(iterable)
+        if any((_is_iterable(element) for element in iter_list)):
+            mapped = (map_last_dim(element, func, as_iterable)
+                      for element in iter_list)
+            if not as_iterable:
+                mapped = list(mapped)
+            return mapped
+        else:
+            return func(iter_list)
+    else:
+        return iterable

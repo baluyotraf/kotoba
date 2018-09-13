@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from ._utils import uniquify, flatten, create_directory
+from .itertools import uniquify, flatten
 from .preprocess import FunctionPreprocessor
 
 
@@ -40,6 +40,12 @@ class Embedding(TokenEmbedding):
                         else unk_idx)
 
     # noinspection PyMethodMayBeStatic
+    def _create_parent_dir(self, path):
+        parent_dir = os.path.dirname(path)
+        if parent_dir:
+            os.makedirs(parent_dir, exist_ok=True)
+
+    # noinspection PyMethodMayBeStatic
     def _create_index_token_list(self, token_list, special_tokens):
         token_list = uniquify(flatten(token_list))
         index_to_token = special_tokens.copy()
@@ -77,7 +83,7 @@ class Embedding(TokenEmbedding):
         return self._get_coverage(ids_set, ids)
 
     def export_token_list(self, path, encoding='utf-8'):
-        create_directory(path)
+        self._create_parent_dir(path)
         with open(path, 'w', encoding=encoding) as file:
             file.writelines((l + '\n' for l in self._index_to_token))
 

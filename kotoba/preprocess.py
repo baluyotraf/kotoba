@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from ._utils import map_elements
+from .itertools import map_elements
 
 
 class Preprocessor(metaclass=ABCMeta):
