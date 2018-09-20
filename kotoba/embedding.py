@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+from itertools import chain
 from .itertools import uniquify, flatten
 from .preprocess import MapItems
 
@@ -45,9 +46,10 @@ class Embedding(TokenEmbedding):
 
     # noinspection PyMethodMayBeStatic
     def _create_index_token_list(self, token_list, special_tokens):
-        token_list = uniquify(flatten(token_list))
-        index_to_token = special_tokens.copy()
-        index_to_token.extend(token_list)
+        token_list = flatten(token_list)
+        all_tokens = chain(special_tokens, token_list)
+        all_tokens = uniquify(all_tokens)
+        index_to_token = list(all_tokens)
         return index_to_token
 
     # noinspection PyMethodMayBeStatic
