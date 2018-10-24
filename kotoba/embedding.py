@@ -5,29 +5,63 @@ from .preprocess import MapItems
 
 
 class TokenEmbedding(metaclass=ABCMeta):
+    """
+    Base class for implementing a token embedding class
+    """
 
     @abstractmethod
     def token_to_id(self, token):
+        """
+        Converts a token to an integer id
+        :param token: token to convert
+        :return: equivalent integer id
+        """
         pass
 
     @abstractmethod
     def id_to_token(self, id_):
+        """
+        Converts an integer id back to a token
+        :param id_: integer id
+        :return:  equivalent token
+        """
         pass
 
     @abstractmethod
     def token_coverage(self, tokens):
+        """
+        Calculate the rate of tokens that can be embedded
+        :param tokens: Data tokens
+        :return: Percentage of convertible tokens
+        """
         pass
 
     @abstractmethod
     def id_coverage(self, ids):
+        """
+        Calculates the rate of ids that can be embedded
+        :param ids: Data ids
+        :return: Percentage of convertible integer ids
+        """
         pass
 
     @abstractmethod
     def export_token_list(self, path):
+        """
+        Serializes the embedding to a file
+        :param path: Path to save the serialized tokens
+        """
         pass
 
 
 class Embedding(TokenEmbedding):
+    """
+    Transforms tokens into their integer ids
+
+    :param token_list: List of tokens to embed
+    :param special_tokens: Special tokens like padding, ending, etc.
+    :param unk_idx: Id for the unknown token
+    """
     def __init__(self, token_list, special_tokens=None, unk_idx=None):
         special_tokens = special_tokens or []
         index_to_token = self._create_index_token_list(token_list, special_tokens)
@@ -98,18 +132,31 @@ class Embedding(TokenEmbedding):
 
     @classmethod
     def from_glove_file(cls, path, special_tokens=None, unk_idx=None, encoding='utf-8'):
+        """
+        :param path: Path of the glove file
+        :param special_tokens: special tokens to append to the gloves
+        :param unk_idx: Id for the unknown token
+        :param encoding: encoding for the glove file
+        :return:
+        """
         with open(path, 'r', encoding=encoding) as file:
             parsed_file = (l.strip().split(' ')[0] for l in file)
             return cls(parsed_file, special_tokens, unk_idx)
 
 
 class EmbedTokenToID(MapItems):
-
+    """
+    A preprocessor that converts the tokens to integer id
+    :param token_embedding: TokenEmbedding object
+    """
     def __init__(self, token_embedding):
         super().__init__(token_embedding.token_to_id)
 
 
 class EmbedIDToToken(MapItems):
-
+    """
+    A preprocessor that converts the integer id to tokens
+    :param token_embedding: TokenEmbedding object
+    """
     def __init__(self, token_embedding):
         super().__init__(token_embedding.id_to_token)
