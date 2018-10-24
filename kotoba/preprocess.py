@@ -3,13 +3,27 @@ from .itertools import map_elements, map_last_dim, batch, map_iterable
 
 
 class Preprocessor(metaclass=ABCMeta):
+    """
+    Base class for implementing preprocessing algorithms
+    """
 
     @abstractmethod
     def transform(self, x, as_iterable=False):
+        """
+        Applies the preprocessing procedure to the data
+        :param x: data to preprocess
+        :param as_iterable: defines if the operation should return an iterable or a list
+        :return: transformed data
+        """
         pass
 
 
 class Pipeline(Preprocessor):
+    """
+    Applies preprocessor classes one after the other
+
+    :param preprocessors: List of preprocessors in the pipeline
+    """
 
     def __init__(self, preprocessors):
         self._preprocessors = preprocessors[:-1]
@@ -23,6 +37,11 @@ class Pipeline(Preprocessor):
 
 
 class HorizontalPipeline(Preprocessor):
+    """
+    Applies preprocessor for each element in the top level iterable
+
+    :param preprocessors: List of preprocessors in the pipeline
+    """
 
     def __init__(self, preprocessors):
         self._preprocessors = preprocessors
@@ -39,6 +58,11 @@ class HorizontalPipeline(Preprocessor):
 
 
 class Raw(Preprocessor):
+    """
+    Applies a function on the data
+
+    :param func: function to apply to the data
+    """
 
     def __init__(self, func):
         self._func = func
@@ -51,6 +75,11 @@ class Raw(Preprocessor):
 
 
 class MapItems(Preprocessor):
+    """
+    Applies a function to each non iterable element
+
+    :param func: function to apply to data
+    """
 
     def __init__(self, func):
         self._func = func
@@ -60,12 +89,18 @@ class MapItems(Preprocessor):
 
 
 class LowerCase(MapItems):
+    """
+    Converts all non iterable element to lower case
+    """
 
     def __init__(self):
         super().__init__(lambda x: x.lower())
 
 
 class Transpose2D(Preprocessor):
+    """
+    Transposes a multi-dimensional iterable as 2D
+    """
 
     def transform(self, x, as_iterable=False):
         transposed = zip(*x)
@@ -75,6 +110,11 @@ class Transpose2D(Preprocessor):
 
 
 class Batch(Preprocessor):
+    """
+    Combines the elements of the top level iterable into batches
+
+    :param n: number of elements in a batch
+    """
 
     def __init__(self, n):
         self._n = n
